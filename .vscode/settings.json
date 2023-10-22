@@ -1,0 +1,13 @@
+{
+    "python.linting.pylintEnabled" : false,
+    "python.linting.flake8Enabled" : true,
+    "python.linting.enabled" : true,
+    "python.formatting.provider" : "black",
+    "isort.importStrategy" : "fromEnvironment",
+    "[python]" : {
+        "editor.codeActionOnSave" : {
+            "souce.organizeImports" : true
+        }
+    },
+    "phyton.languageServer" : "Pylance"
+}
