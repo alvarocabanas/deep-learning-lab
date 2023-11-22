@@ -1,0 +1,4 @@
+Flask
+torch
+torchtext
+gunicorn

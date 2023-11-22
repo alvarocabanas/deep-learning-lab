@@ -1,0 +1,8 @@
+matplotlib
+numpy
+Pillow
+torch
+torchtext
+Flask==2.1.0
+Werkzeug==2.2.2
+portalocker=2.0.0
