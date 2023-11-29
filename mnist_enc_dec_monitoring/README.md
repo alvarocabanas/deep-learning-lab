@@ -32,6 +32,12 @@ To run the project with different arguments, run
 python main.py --task reconstruction --log_framework tensorboard --latent_dims 64 --n_epochs 10
 ```
 
+To run tensorboard with the generated logs
+```
+tensorboard --logdir logs
+```
+
+
 ## TODO
 1. Get familiarized with the code in main.py and run_reconstruction/classification.py
 2. Start by completing the TODO's in the tensorboard_TODO.py file. Only those required to solve the reconstruction task. 
