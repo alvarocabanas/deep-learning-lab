@@ -138,3 +138,72 @@ print('Sub-sequences len: ', CHUNK_SIZE)
 # discontinuities... YES. But we can assume that each sub-sequence is continuous in a long
 # enough chunk so that those discontinuities are negligible.
 
+# Let's now build a model to train with its optimizer and loss
+model = CharLSTM(VOCAB_SIZE, RNN_SIZE, MLP_SIZE)
+model.to(device)
+loss_function = nn.NLLLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+NUM_EPOCHS = 2000
+tr_loss = []
+state = None
+timer_beg = timer()
+for epoch in range(NUM_EPOCHS):
+  model.train()
+  # let's slide over our dataset
+  for beg_t, end_t in zip(range(0, CHUNK_SIZE - SEQ_LEN - 1, SEQ_LEN + 1),
+                          range(SEQ_LEN + 1, CHUNK_SIZE, SEQ_LEN + 1)):
+    # Step 1. Remember that Pytorch accumulates gradients.
+    # We need to clear them out before each instance
+    optimizer.zero_grad()
+
+    dataX = []
+    dataY = []
+    # Step 2. Get our inputs ready for the network, that is, turn them into
+    # Tensors of one-hot sequences.
+    for sent in trainset:
+      # chunk the sentence
+      chunk = sent[beg_t:end_t]
+
+      # TODO: get X and Y with a shift of 1
+      X = chunk[:-1]  # remove last char
+      Y = chunk[1:]  # remove first char
+
+      # convert each sequence to one-hots and labels respectively
+      X = prepare_sequence(X, char2idx)
+      Y = prepare_sequence(Y, char2idx, onehot=False)
+      dataX.append(X.unsqueeze(0))  # create batch-dim
+      dataY.append(Y.unsqueeze(0))  # create batch-dim
+    dataX = torch.cat(dataX, dim=0).to(device)
+    dataY = torch.cat(dataY, dim=0).to(device)
+
+    # Step 3. Run our forward pass.
+    # Forward through model and carry the previous state forward in time (statefulness)
+    y_, state = model(dataX, state)
+    # detach the previous state graph to not backprop gradients further than the BPTT span
+    state = (state[0].detach(),  # detach c[t]
+             state[1].detach())  # detach h[t]
+
+    # Step 4. Compute the loss, gradients, and update the parameters by
+    #  calling optimizer.step()
+    loss = loss_function(y_, dataY.view(-1))
+    loss.backward()
+    optimizer.step()
+    tr_loss.append(loss.item())
+  timer_end = timer()
+  if (epoch + 1) % 50 == 0:
+    # Generate a seed sentence to play around
+    model.to('cpu')
+    print('-' * 30)
+    print(gen_text(model, 'They ', char2idx))
+    print('-' * 30)
+    model.to(device)
+    print('Finished epoch {} in {:.1f} s: loss: {:.6f}'.format(epoch + 1,
+                                                               timer_end - timer_beg,
+                                                               np.mean(tr_loss[-10:])))
+  timer_beg = timer()
+
+plt.plot(tr_loss)
+plt.xlabel('Epoch')
+plt.ylabel('NLLLoss')
+
+print(gen_text(model.to('cpu'), 'Professor ', char2idx, 1000))

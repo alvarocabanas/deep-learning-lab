@@ -55,10 +55,10 @@ class MyUnidirectionalRNN(nn.Module):
     return torch.zeros(batch_size, self.rnn_size)
 
 # To correctly assess the answer, we build an example RNN with 10 inputs and 32 neurons
-rnn = MyUnidirectionalRNN(1, 1)
+rnn = MyUnidirectionalRNN(10, 32)
 # Then we will forward 10 random sequences, each of length 15
 rnn.eval()
-xt = torch.Tensor([[[12],[8]]])
+xt = torch.randn(5, 15, 10)
 print(xt.shape)
 # The returned tensor will be h[t]
 ht = rnn(xt)
