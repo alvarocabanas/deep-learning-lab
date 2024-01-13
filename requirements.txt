@@ -6,3 +6,5 @@ torchvision
 pandas
 ray
 seaborn
+IPython
+tqdm
